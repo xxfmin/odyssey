@@ -14,7 +14,7 @@ export async function GET(
     // get JWT token username
     const { userId } = requireAuth(request);
     if (!userId) {
-      NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     await connectMongoDB();
