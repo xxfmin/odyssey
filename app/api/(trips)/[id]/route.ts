@@ -4,14 +4,15 @@ import Expense from "@/models/Expense";
 import Trip, { ItineraryDayModel } from "@/models/Trip";
 import { NextRequest, NextResponse } from "next/server";
 
+// GET handler
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  { params }: { params: Promise<{ id: string }> }
+): Promise<NextResponse> {
   try {
-    const { id } = params;
+    const { id } = await params;
 
-    // get JWT token username
+    // authenticate
     const { userId } = requireAuth(request);
     if (!userId) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -26,7 +27,7 @@ export async function GET(
 
     return NextResponse.json(trip);
   } catch (error) {
-    console.log("Error retrieving trip:", error);
+    console.error("Error retrieving trip:", error);
     return NextResponse.json(
       { message: "Internal Server Error" },
       { status: 500 }
@@ -34,12 +35,13 @@ export async function GET(
   }
 }
 
+// DELETE handler
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  { params }: { params: Promise<{ id: string }> }
+): Promise<NextResponse> {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // authenticate
     const { userId } = requireAuth(request);
@@ -73,7 +75,7 @@ export async function DELETE(
       { status: 200 }
     );
   } catch (error) {
-    console.log("Error deleting trip:", error);
+    console.error("Error deleting trip:", error);
     return NextResponse.json(
       { message: "Internal Server Error" },
       { status: 500 }
