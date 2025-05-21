@@ -7,9 +7,13 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
+    // connect to database
     await connectMongoDB();
+
+    // take in user data from request
     const { identifier, password } = await request.json();
 
+    // basic validation
     if (!identifier || !password) {
       return NextResponse.json(
         { message: "All fields are required" },
@@ -17,14 +21,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // normalize input
     const normalized = identifier.trim().toLowerCase();
+
+    // query by username/email
     const user = await User.findOne({
       $or: [{ username: normalized }, { email: normalized }],
     });
+
+    // make sure user exists
     if (!user) {
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
+      return NextResponse.json(
+        {
+          message: "User not found",
+        },
+        { status: 404 }
+      );
     }
 
+    // compare hashed password with stored password
     if (!(await bcrypt.compare(password, user.password))) {
       return NextResponse.json(
         { message: "Your password is incorrect" },
@@ -32,26 +47,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // jwt creation
     const payload = {
       userId: (user._id as mongoose.Types.ObjectId).toString(),
       username: user.username,
     };
-    const token = sign(payload, process.env.JWT_SECRET!, { expiresIn: "1h" });
+    const token = sign(payload, process.env.JWT_SECRET!, {
+      expiresIn: "3h", // Use consistent format
+    });
 
-    // Return JSON *and* set the cookie
+    // Create the response
     const response = NextResponse.json(
       {
-        success: true,
-        user: { username: user.username, email: user.email, _id: user._id },
+        message: "Login successful",
+        user: {
+          username: user.username,
+          email: user.email,
+          _id: user._id,
+        },
       },
       { status: 200 }
     );
+
+    // Set cookie properly using the response cookies
     response.cookies.set({
       name: "token",
       value: token,
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 180, // 3 hours
+      maxAge: 60 * 60 * 3, // 3 hours in seconds (clearer notation)
       path: "/",
       sameSite: "lax",
     });
