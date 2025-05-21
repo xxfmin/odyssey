@@ -29,7 +29,6 @@ Otherwise respond with:
   if (!res.ok) return null;
 
   const data = await res.json();
-  // pick off the first candidate exactly like in ExploreClient.tsx
   const cand = data.candidates?.[0];
   let text =
     cand?.content?.parts?.[0]?.text ||
@@ -37,13 +36,10 @@ Otherwise respond with:
     cand?.text ||
     (typeof cand?.content === "string" ? cand.content : "");
 
-  // strip ```json fences
   text = text
     .replace(/^```json/i, "")
     .replace(/```$/, "")
     .trim();
-
-  // pull out the {...} if there’s stray chatter
   const m = text.match(/(\{[\s\S]*\})/);
   if (m) text = m[1];
 
@@ -63,6 +59,9 @@ export default function CreateTrip() {
   const [endDate, setEndDate] = useState("");
   const [error, setError] = useState("");
 
+  // yyyy-MM-dd for <input type="date" min=...>
+  const today = new Date().toISOString().slice(0, 10);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -77,14 +76,12 @@ export default function CreateTrip() {
       return;
     }
 
-    // 1) geocode
     const geo = await DestinationChecker(whereTo);
     if (!geo) {
       setError("Please enter a real location.");
       return;
     }
 
-    // 2) send full payload
     const response = await fetch("/api/create-trip", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -118,6 +115,7 @@ export default function CreateTrip() {
           <h1 className="text-3xl font-bold text-center pb-10">
             Plan a new trip
           </h1>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <h3 className="text-sm pl-4 font-semibold">Where to?</h3>
@@ -132,26 +130,33 @@ export default function CreateTrip() {
                 onChange={(e) => setWhereTo(e.target.value)}
               />
             </div>
+
             <div className="flex space-x-4">
+              {/* Start Date */}
               <div className="flex-1">
                 <h3 className="text-sm pl-4 font-semibold">Start date</h3>
                 <input
                   type="date"
+                  min={today}
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                   className="w-full rounded-full border border-gray-300 px-4 py-2"
                 />
               </div>
+
+              {/* End Date */}
               <div className="flex-1">
                 <h3 className="text-sm pl-4 font-semibold">End date</h3>
                 <input
                   type="date"
+                  min={startDate || today}
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                   className="w-full rounded-full border border-gray-300 px-4 py-2"
                 />
               </div>
             </div>
+
             <p
               className={`text-center text-red-500 text-sm min-h-[1.25rem] ${
                 error ? "" : "invisible"
@@ -159,6 +164,7 @@ export default function CreateTrip() {
             >
               {error}
             </p>
+
             <div className="flex justify-center">
               <button
                 type="submit"
