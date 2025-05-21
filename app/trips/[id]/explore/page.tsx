@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Trip from "@/models/Trip";
 import { ItineraryDayModel } from "@/models/Trip";
 import ExploreClient, { SerializedItineraryDay } from "./ExploreClient";
+import connectMongoDB from "@/lib/mongodb";
 
 // Tell TS that params comes in as a Promise
 type PageProps = {
@@ -12,6 +13,8 @@ type PageProps = {
 export default async function ExplorePage({ params }: PageProps) {
   // now await the promise before destructuring
   const { id: tripId } = await params;
+
+  await connectMongoDB();
 
   // 1) fetch the trip (title, destination, itinerary IDs)
   const tripDoc = await Trip.findById(tripId)
