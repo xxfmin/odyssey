@@ -18,20 +18,47 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
 
-    const res = await fetch("/api/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ identifier, password }),
+    console.log("👉 doLogin start", { identifier, password });
+
+    let res: Response;
+    try {
+      res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ identifier, password }),
+      });
+    } catch (networkErr) {
+      console.error("❌ Network error on fetch:", networkErr);
+      setError("Network error. Check console.");
+      return;
+    }
+
+    console.log("↩️ Fetch returned", {
+      status: res.status,
+      ok: res.ok,
+      redirected: res.redirected,
+      type: res.type,
+      url: res.url,
     });
 
-    const data = await res.json().catch(() => ({}));
+    let data: any = {};
+    try {
+      data = await res.json();
+      console.log("📦 Parsed JSON:", data);
+    } catch {
+      console.warn("⚠️ No JSON body (likely a redirect).");
+    }
 
-    if (res.ok && (data as any).success) {
-      // hard navigation so the cookie is committed
+    // DEBUG: show cookies in JS (will only show non-httpOnly cookies)
+    console.log("🍪 document.cookie after fetch:", document.cookie);
+
+    if (res.ok && data.success) {
+      console.log("✅ Login succeeded, navigating to /dashboard");
       window.location.href = "/dashboard";
     } else {
-      setError((data as any).message || "Sign in failed");
+      console.log("🚫 Login failed, showing error");
+      setError(data.message || "Sign in failed");
     }
   };
 
@@ -44,10 +71,15 @@ export default function LoginPage() {
         >
           Go back
         </Link>
-        <h1 className={`w-full pt-6 text-center text-2xl font-bold ${poppins.className}`}>
+        <h1
+          className={`w-full pt-6 text-center text-2xl font-bold ${poppins.className}`}
+        >
           Welcome to odyssey
         </h1>
-        <form onSubmit={doLogin} className="w-full flex flex-col items-center space-y-2 px-10">
+        <form
+          onSubmit={doLogin}
+          className="w-full flex flex-col items-center space-y-2 px-10"
+        >
           <input
             name="identifier"
             type="text"
@@ -66,7 +98,10 @@ export default function LoginPage() {
           />
           <button
             type="button"
-            onClick={() => (window.location.href = "/forgot-password")}
+            onClick={() => {
+              console.log("→ Navigating to /forgot-password");
+              window.location.href = "/forgot-password";
+            }}
             className={`w-full text-center text-xs underline cursor-pointer ${poppins.className}`}
           >
             Forgot password?
@@ -92,10 +127,15 @@ export default function LoginPage() {
             Sign in
           </button>
         </form>
-        <div className={`w-full mt-4 flex justify-center items-center text-sm text-gray-600 ${poppins.className}`}>
+        <div
+          className={`w-full mt-4 flex justify-center items-center text-sm text-gray-600 ${poppins.className}`}
+        >
           <span>Don't have an account?</span>
           <button
-            onClick={() => (window.location.href = "/signup")}
+            onClick={() => {
+              console.log("→ Navigating to /signup");
+              window.location.href = "/signup";
+            }}
             className="pl-1 text-md text-blue-500 font-bold underline cursor-pointer"
           >
             Sign up
