@@ -6,16 +6,14 @@ import { Types } from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
 // route for creating new trip
-export async function POST(request: NextRequest) {
-  try {
-    // get JWT token username
-    const { userId } = requireAuth(request);
-    // turn it into a mongo ObjectId
-    const ownerId = new Types.ObjectId(userId);
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  // 1) authenticate *before* your try/catch
+  const { userId } = requireAuth(request);
+  const ownerId = new Types.ObjectId(userId);
 
+  try {
     await connectMongoDB();
 
-    // take in input from request
     const {
       title,
       destination,
@@ -25,7 +23,6 @@ export async function POST(request: NextRequest) {
       destinationLng,
     } = await request.json();
 
-    // basic validation
     if (!title || !destination || !startDate || !endDate) {
       return NextResponse.json(
         { message: "All fields are required" },
@@ -33,13 +30,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // find user
     const user = await User.findById(ownerId);
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    // create trip
     const newTrip = await Trip.create({
       title,
       destination,
@@ -49,8 +44,6 @@ export async function POST(request: NextRequest) {
       endDate,
       user: ownerId,
     });
-
-    // add trip to user's trips
     user.trips.push(newTrip._id as Types.ObjectId);
     await user.save();
 

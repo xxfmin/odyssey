@@ -9,20 +9,20 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
+  // 1) authenticate *before* your try/catch
+  const { userId } = requireAuth(request);
+
   try {
     const { id } = await params;
-
-    // authenticate
-    const { userId } = requireAuth(request);
-    if (!userId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
     await connectMongoDB();
 
     const trip = await Trip.findById(id);
     if (!trip) {
       return NextResponse.json({ message: "Trip not found" }, { status: 404 });
+    }
+    // (optional) ensure the trip belongs to the current user
+    if (trip.user.toString() !== userId) {
+      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
     }
 
     return NextResponse.json(trip);
@@ -40,15 +40,11 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
+  // 1) authenticate *before* your try/catch
+  const { userId } = requireAuth(request);
+
   try {
     const { id } = await params;
-
-    // authenticate
-    const { userId } = requireAuth(request);
-    if (!userId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
     await connectMongoDB();
 
     const trip = await Trip.findById(id);
@@ -59,15 +55,11 @@ export async function DELETE(
       return NextResponse.json({ message: "Forbidden" }, { status: 403 });
     }
 
-    // cascade-delete itinerary days
+    // cascade-delete itinerary days & expenses
     if (Array.isArray(trip.itinerary) && trip.itinerary.length > 0) {
       await ItineraryDayModel.deleteMany({ _id: { $in: trip.itinerary } });
     }
-
-    // cascade-delete expenses
     await Expense.deleteMany({ trip: trip._id });
-
-    // delete the trip
     await Trip.findByIdAndDelete(id);
 
     return NextResponse.json(
