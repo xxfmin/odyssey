@@ -2,76 +2,86 @@ import connectMongoDB from "@/lib/mongodb";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
 import { sign } from "jsonwebtoken";
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(request: NextRequest) {
-  console.log("👉 [API] POST /api/login called");
+// 1) Define an interface matching your User model
+interface IUser {
+  _id: mongoose.Types.ObjectId;
+  username: string;
+  email: string;
+  password: string;
+}
 
+// 2) Tell TS that our Mongoose result is a Document + IUser
+type UserDoc = Document & IUser;
+
+export async function POST(request: NextRequest) {
   try {
     await connectMongoDB();
-    console.log("🔗 Connected to MongoDB");
 
     const { identifier, password } = await request.json();
-    console.log("📥 Payload:", { identifier, password: password ? "***" : null });
-
     if (!identifier || !password) {
-      console.log("⚠️ Missing fields");
-      return NextResponse.json({ message: "All fields are required" }, { status: 400 });
+      return NextResponse.json(
+        { message: "All fields are required" },
+        { status: 400 }
+      );
     }
 
     const normalized = identifier.trim().toLowerCase();
-    const user = await User.findOne({
-      $or: [{ username: normalized }, { email: normalized }],
-    });
-    console.log("🔍 User lookup:", user ? user._id : "not found");
 
-    if (!user) {
+    // 3) Cast findOne() result to UserDoc | null
+    const userDoc = (await User.findOne({
+      $or: [{ username: normalized }, { email: normalized }],
+    })) as UserDoc | null;
+
+    if (!userDoc) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
-    if (!(await bcrypt.compare(password, user.password))) {
-      console.log("❌ Password mismatch");
-      return NextResponse.json({ message: "Your password is incorrect" }, { status: 401 });
+
+    // 4) Now TS knows userDoc._id is an ObjectId
+    if (!(await bcrypt.compare(password, userDoc.password))) {
+      return NextResponse.json(
+        { message: "Your password is incorrect" },
+        { status: 401 }
+      );
     }
 
+    // 5) Create the JWT payload
     const payload = {
-      userId: user._id.toString(),
-      username: user.username,
+      userId: userDoc._id.toString(),
+      username: userDoc.username,
     };
     const token = sign(payload, process.env.JWT_SECRET!, { expiresIn: "1h" });
-    console.log("✅ JWT signed:", token.substring(0, 10) + "...");
 
-    // create JSON response and set cookie on it
+    // 6) Build your JSON response and set the cookie on it
     const res = NextResponse.json(
       {
         success: true,
         user: {
-          username: user.username,
-          email: user.email,
-          _id: user._id,
+          username: userDoc.username,
+          email: userDoc.email,
+          _id: userDoc._id,
         },
       },
       { status: 200 }
     );
-
-    // DEV‐ONLY: make the cookie visible to document.cookie so we can debug.
-    // In production, switch httpOnly: true.
-    const isDev = process.env.NODE_ENV !== "production";
-
     res.cookies.set({
       name: "token",
       value: token,
-      httpOnly: !isDev,      // <— false in dev to let document.cookie see it
+      httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 180,
+      maxAge: 60 * 180, // 3 hours
       path: "/",
       sameSite: "lax",
     });
-    console.log(`🍪 Set-Cookie header sent (httpOnly=${!isDev})`);
 
     return res;
   } catch (error) {
-    console.error("🔥 Error in POST /api/login:", error);
-    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+    console.error("Error logging in:", error);
+    return NextResponse.json(
+      { message: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }

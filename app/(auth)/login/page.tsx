@@ -18,47 +18,18 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
 
-    console.log("👉 doLogin start", { identifier, password });
-
-    let res: Response;
-    try {
-      res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ identifier, password }),
-      });
-    } catch (networkErr) {
-      console.error("❌ Network error on fetch:", networkErr);
-      setError("Network error. Check console.");
-      return;
-    }
-
-    console.log("↩️ Fetch returned", {
-      status: res.status,
-      ok: res.ok,
-      redirected: res.redirected,
-      type: res.type,
-      url: res.url,
+    const res = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ identifier, password }),
     });
 
-    let data: any = {};
-    try {
-      data = await res.json();
-      console.log("📦 Parsed JSON:", data);
-    } catch {
-      console.warn("⚠️ No JSON body (likely a redirect).");
-    }
-
-    // DEBUG: show cookies in JS (will only show non-httpOnly cookies)
-    console.log("🍪 document.cookie after fetch:", document.cookie);
-
-    if (res.ok && data.success) {
-      console.log("✅ Login succeeded, navigating to /dashboard");
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && (data as any).success) {
       window.location.href = "/dashboard";
     } else {
-      console.log("🚫 Login failed, showing error");
-      setError(data.message || "Sign in failed");
+      setError((data as any).message || "Sign in failed");
     }
   };
 
@@ -98,10 +69,7 @@ export default function LoginPage() {
           />
           <button
             type="button"
-            onClick={() => {
-              console.log("→ Navigating to /forgot-password");
-              window.location.href = "/forgot-password";
-            }}
+            onClick={() => (window.location.href = "/forgot-password")}
             className={`w-full text-center text-xs underline cursor-pointer ${poppins.className}`}
           >
             Forgot password?
@@ -132,10 +100,7 @@ export default function LoginPage() {
         >
           <span>Don't have an account?</span>
           <button
-            onClick={() => {
-              console.log("→ Navigating to /signup");
-              window.location.href = "/signup";
-            }}
+            onClick={() => (window.location.href = "/signup")}
             className="pl-1 text-md text-blue-500 font-bold underline cursor-pointer"
           >
             Sign up
