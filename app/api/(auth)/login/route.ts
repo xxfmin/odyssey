@@ -38,17 +38,20 @@ export async function POST(request: NextRequest) {
     };
     const token = sign(payload, process.env.JWT_SECRET!, { expiresIn: "1h" });
 
-    // 302 so fetch will switch to GET when following the redirect
-    const response = NextResponse.redirect(
-      new URL("/dashboard", request.url),
-      302
+    // Return JSON *and* set the cookie
+    const response = NextResponse.json(
+      {
+        success: true,
+        user: { username: user.username, email: user.email, _id: user._id },
+      },
+      { status: 200 }
     );
     response.cookies.set({
       name: "token",
       value: token,
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 180,
+      maxAge: 60 * 180, // 3 hours
       path: "/",
       sameSite: "lax",
     });

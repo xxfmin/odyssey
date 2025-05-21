@@ -1,9 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import React from "react";
-import { Poppins } from "next/font/google";
 import Link from "next/link";
+import { Poppins } from "next/font/google";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -11,7 +10,6 @@ const poppins = Poppins({
 });
 
 export default function Login() {
-  const router = useRouter();
   const [identifier, setIdentifier] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState("");
@@ -24,26 +22,17 @@ export default function Login() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      redirect: "manual",
       body: JSON.stringify({ identifier, password }),
     });
 
-    // — any 3xx (302, 307, etc.) → do a hard navigation
-    if (res.status >= 300 && res.status < 400) {
-      const location = res.headers.get("Location") || "/dashboard";
-      window.location.href = location;
-      return;
-    }
+    const data = await res.json().catch(() => ({}));
 
-    // — otherwise handle it as JSON (error cases)
-    let data: { message?: string } = {};
-    try {
-      data = await res.json();
-    } catch {
-      // no JSON body
+    if (res.ok && (data as any).success) {
+      // full-page nav so the cookie you just set is committed
+      window.location.href = "/dashboard";
+    } else {
+      setError(data.message || "Sign in failed");
     }
-
-    setError(data.message || "Sign in failed");
   }
 
   return (
@@ -70,7 +59,7 @@ export default function Login() {
             placeholder="Username or email"
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
-            className={`w-full px-4 py-2 mb-4 mt-4 text-left text-sm placeholder-gray-400 border-2 rounded-md border-gray-200 ${poppins.className}`}
+            className={`w-full px-4 py-2 text-left text-sm placeholder-gray-400 border-2 rounded-md border-gray-200 ${poppins.className}`}
           />
           <input
             name="password"
@@ -82,8 +71,8 @@ export default function Login() {
           />
           <button
             type="button"
-            onClick={() => router.push("/forgot-password")}
-            className={`w-full text-center text-xs ${poppins.className} underline cursor-pointer`}
+            onClick={() => (window.location.href = "/forgot-password")}
+            className={`w-full text-center text-xs underline cursor-pointer ${poppins.className}`}
           >
             Forgot password?
           </button>
@@ -113,7 +102,7 @@ export default function Login() {
         >
           <span>Don't have an account?</span>
           <button
-            onClick={() => router.push("/signup")}
+            onClick={() => (window.location.href = "/signup")}
             className="pl-1 text-md text-blue-500 font-bold underline cursor-pointer"
           >
             Sign up
