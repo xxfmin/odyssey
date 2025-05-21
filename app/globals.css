@@ -1,5 +1,3 @@
-/* globals.css */
-
 /* 1) Google Fonts import must be first */
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
 
@@ -8,7 +6,9 @@
 
 /* 3) Your custom overrides go inside the `base` layer */
 @layer base {
+  /* Set color scheme to light only */
   :root {
+    color-scheme: light only;
     --background: #ffffff;
     --foreground: #171717;
     --color-background: var(--background);
@@ -17,10 +17,12 @@
     --font-mono: var(--font-geist-mono);
   }
 
+  /* Override dark mode media query entirely */
   @media (prefers-color-scheme: dark) {
     :root {
-      --background: #0a0a0a;
-      --foreground: #ededed;
+      /* Keep light mode values instead of dark mode values */
+      --background: #ffffff;
+      --foreground: #171717;
       --color-background: var(--background);
       --color-foreground: var(--foreground);
     }
@@ -35,6 +37,8 @@
   html {
     font-family: "Poppins", sans-serif;
     scroll-behavior: smooth;
+    /* Force light mode at HTML level too */
+    color-scheme: light;
   }
 }
 
