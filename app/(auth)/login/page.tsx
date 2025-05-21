@@ -19,22 +19,25 @@ export default function Login() {
   async function doLogin(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    // fetch api
-    const response = await fetch("/api/login", {
+
+    const res = await fetch("/api/login", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       credentials: "include",
+      redirect: "manual",
       body: JSON.stringify({ identifier, password }),
     });
-    // if ok, push to dashboard page
-    if (response.ok) {
-      router.push("/dashboard");
-    } else {
-      const data = await response.json();
-      setError(data.message || "Sign in failed");
+
+    // on 302 Redirect, do a full navigation so the cookie sticks
+    if (res.status === 302 || res.redirected) {
+      const location = res.headers.get("Location")!;
+      window.location.href = location;
+      return;
     }
+
+    // otherwise it’s an error JSON
+    const data = await res.json();
+    setError(data.message || "Sign in failed");
   }
 
   return (
@@ -46,16 +49,12 @@ export default function Login() {
         >
           Go back
         </Link>
-        <h1
-          className={`w-full pt-6 text-center text-2xl font-bold ${poppins.className}`}
-        >
+        <h1 className={`w-full pt-6 text-center text-2xl font-bold ${poppins.className}`}>
           Welcome to odyssey
         </h1>
-        <form
-          onSubmit={doLogin}
-          className="w-full flex flex-col items-center space-y-2 px-10"
-        >
+        <form onSubmit={doLogin} className="w-full flex flex-col items-center space-y-2 px-10">
           <input
+            name="identifier"
             type="text"
             placeholder="Username or email"
             value={identifier}
@@ -63,6 +62,7 @@ export default function Login() {
             className={`w-full px-4 py-2 mb-4 mt-4 text-left text-sm placeholder-gray-400 border-2 rounded-md border-gray-200 ${poppins.className}`}
           />
           <input
+            name="password"
             type="password"
             placeholder="Password"
             value={password}
@@ -79,12 +79,12 @@ export default function Login() {
           <div className="w-full min-h-[1rem] flex justify-center items-center">
             <div
               className={`
-        flex items-center space-x-2 
-        bg-pink-50 border border-pink-200 text-pink-700 
-        px-4 rounded-lg
-        ${error ? "visible" : "invisible"}
-        ${poppins.className}
-      `}
+                flex items-center space-x-2 
+                bg-pink-50 border border-pink-200 text-pink-700 
+                px-4 rounded-lg
+                ${error ? "visible" : "invisible"}
+                ${poppins.className}
+              `}
             >
               <span className="text-lg">❗</span>
               <span className="text-xs font-medium">{error}</span>
@@ -97,9 +97,7 @@ export default function Login() {
             Sign in
           </button>
         </form>
-        <div
-          className={`w-full mt-4 flex justify-center items-center text-sm text-gray-600 ${poppins.className}`}
-        >
+        <div className={`w-full mt-4 flex justify-center items-center text-sm text-gray-600 ${poppins.className}`}>
           <span>Don't have an account?</span>
           <button
             onClick={() => router.push("/signup")}
