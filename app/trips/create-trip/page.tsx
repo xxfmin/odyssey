@@ -88,6 +88,7 @@ export default function CreateTrip() {
     const response = await fetch("/api/create-trip", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({
         title: whereTo,
         destination: whereTo,

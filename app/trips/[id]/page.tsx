@@ -156,7 +156,9 @@ export default function Trip() {
     const fetchTrip = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`/api/${tripId}`);
+        const res = await fetch(`/api/${tripId}`, {
+          credentials: "include",
+        });
         if (!res.ok) throw new Error(`Error: ${res.status}`);
         const data: Trip = await res.json();
         setTrip(data);
@@ -185,7 +187,10 @@ export default function Trip() {
   };
 
   const handleDeleteTrip = async () => {
-    const res = await fetch(`/api/${tripId}`, { method: "DELETE" });
+    const res = await fetch(`/api/${tripId}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
     if (res.ok) router.push("/dashboard");
     else alert("Failed to delete trip");
   };
@@ -193,7 +198,9 @@ export default function Trip() {
   const fetchItineraryDays = async () => {
     try {
       setLoadingItineraryDays(true);
-      const res = await fetch(`/api/itinerary?tripId=${tripId}`);
+      const res = await fetch(`/api/itinerary?tripId=${tripId}`, {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error(`Itinerary error ${res.status}`);
       const json = await res.json();
       if (Array.isArray(json.itinerary)) {
@@ -236,6 +243,7 @@ export default function Trip() {
       const res = await fetch(`/api/expenses`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ expenseId, tripId }),
       });
       if (res.ok) {
@@ -254,6 +262,7 @@ export default function Trip() {
       const res = await fetch(`/api/itinerary`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ tripId, dayId, activityId }),
       });
       if (res.ok) {

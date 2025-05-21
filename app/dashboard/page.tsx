@@ -37,7 +37,9 @@ export default function Dashboard() {
   useEffect(() => {
     async function loadTrips() {
       try {
-        const res = await fetch("/api/get-trips");
+        const res = await fetch("/api/get-trips", {
+          credentials: "include",
+        });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         setTrips(data.trips);

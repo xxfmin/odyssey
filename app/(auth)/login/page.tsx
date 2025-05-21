@@ -25,6 +25,7 @@ export default function Login() {
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
       body: JSON.stringify({ identifier, password }),
     });
     // if ok, push to dashboard page
