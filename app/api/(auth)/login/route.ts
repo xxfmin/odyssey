@@ -49,14 +49,13 @@ export async function POST(request: NextRequest) {
   const payload = { userId: user._id.toString(), username: user.username };
   const token = sign(payload, process.env.JWT_SECRET!, { expiresIn: "1h" });
 
-  // set cookie with SameSite=None so Chrome will persist it on POST→302
   const res = NextResponse.redirect(new URL("/dashboard", request.url), 302);
   res.cookies.set({
     name: "token",
     value: token,
     httpOnly: true,
-    secure: true, // must be true when sameSite: "none"
-    sameSite: "none", // ← allow on cross-site & POST→redirect
+    secure: true,
+    sameSite: "none",
     path: "/",
     maxAge: 60 * 60 * 3, // 3 hours
   });

@@ -23,7 +23,7 @@ export default function LoginPage() {
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // ← crucial for cookie persistence
+        credentials: "include",
         body: JSON.stringify({ identifier, password }),
       });
 

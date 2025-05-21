@@ -26,7 +26,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // simple set of gradients to cycle through
+  // set of gradients to cycle through
   const gradients = [
     "bg-gradient-to-br from-indigo-400 to-purple-600",
     "bg-gradient-to-br from-pink-400 to-red-600",
