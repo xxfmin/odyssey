@@ -4,17 +4,16 @@ import bcrypt from "bcryptjs";
 import { sign } from "jsonwebtoken";
 import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 
 export async function POST(request: NextRequest) {
   try {
-    // connect to database
+    // 1) connect to database
     await connectMongoDB();
 
-    // take in user data from request
+    // 2) parse body
     const { identifier, password } = await request.json();
 
-    // basic validation
+    // 3) validate
     if (!identifier || !password) {
       return NextResponse.json(
         { message: "All fields are required" },
@@ -22,33 +21,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // normalize input
+    // 4) normalize and find user
     const normalized = identifier.trim().toLowerCase();
-
-    // query by username/email
     const user = await User.findOne({
       $or: [{ username: normalized }, { email: normalized }],
     });
-
-    // make sure user exists
     if (!user) {
-      return NextResponse.json(
-        {
-          message: "User not found",
-        },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    // compare hashed password with stored password
-    if (!(await bcrypt.compare(password, user.password))) {
+    // 5) check password
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) {
       return NextResponse.json(
         { message: "Your password is incorrect" },
         { status: 401 }
       );
     }
 
-    // jwt creation
+    // 6) sign JWT
     const payload = {
       userId: (user._id as mongoose.Types.ObjectId).toString(),
       username: user.username,
@@ -57,23 +48,14 @@ export async function POST(request: NextRequest) {
       expiresIn: "1h",
     });
 
-    // Create the response
-    const response = NextResponse.json(
-      { message: "Login successful", user: { 
-        username: user.username,
-        email: user.email,
-        _id: user._id
-      }},
-      { status: 200 }
-    );
-
-    // Set cookie properly using the response cookies
+    // 7) issue a redirect so Set-Cookie is honored on a real navigation
+    const response = NextResponse.redirect(new URL("/dashboard", request.url));
     response.cookies.set({
       name: "token",
       value: token,
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 180, // 3 hours in seconds
+      maxAge: 60 * 180, // 3 hours
       path: "/",
       sameSite: "lax",
     });
