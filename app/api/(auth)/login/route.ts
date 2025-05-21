@@ -5,7 +5,6 @@ import { sign } from "jsonwebtoken";
 import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
-// Define a minimal user shape for TypeScript after .lean()
 type LeanUser = {
   _id: mongoose.Types.ObjectId;
   username: string;
@@ -14,15 +13,12 @@ type LeanUser = {
 };
 
 export async function POST(request: NextRequest) {
-  // 1) connect
   await connectMongoDB();
 
-  // 2) read the form
-  const form = await request.formData();
-  const identifier = (form.get("identifier") as string)?.trim().toLowerCase();
-  const password = form.get("password") as string;
+  // parse JSON instead of formData
+  const { identifier: rawId, password } = await request.json();
+  const identifier = rawId?.trim().toLowerCase();
 
-  // 3) validate
   if (!identifier || !password) {
     return NextResponse.json(
       { message: "All fields are required" },
@@ -30,7 +26,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 4) lookup user as a plain object
   const user = (await User.findOne({
     $or: [{ username: identifier }, { email: identifier }],
   }).lean()) as LeanUser | null;
@@ -42,7 +37,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 5) check password
   const match = await bcrypt.compare(password, user.password);
   if (!match) {
     return NextResponse.json(
@@ -51,20 +45,20 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 6) sign JWT
+  // sign JWT
   const payload = { userId: user._id.toString(), username: user.username };
   const token = sign(payload, process.env.JWT_SECRET!, { expiresIn: "1h" });
 
-  // 7) set cookie + redirect
+  // set cookie with SameSite=None so Chrome will persist it on POST→302
   const res = NextResponse.redirect(new URL("/dashboard", request.url), 302);
   res.cookies.set({
     name: "token",
     value: token,
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 60 * 180, // 3 hours
+    secure: true, // must be true when sameSite: "none"
+    sameSite: "none", // ← allow on cross-site & POST→redirect
     path: "/",
-    sameSite: "lax",
+    maxAge: 60 * 60 * 3, // 3 hours
   });
 
   return res;
