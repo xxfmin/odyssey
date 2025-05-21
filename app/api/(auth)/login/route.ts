@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { sign } from "jsonwebtoken";
 import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 export async function POST(request: NextRequest) {
   try {
@@ -56,15 +57,23 @@ export async function POST(request: NextRequest) {
       expiresIn: "1h",
     });
 
-    // cookie setup
+    // Create the response
     const response = NextResponse.json(
-      { message: "Login successful", user },
+      { message: "Login successful", user: { 
+        username: user.username,
+        email: user.email,
+        _id: user._id
+      }},
       { status: 200 }
     );
-    response.cookies.set("token", token, {
+
+    // Set cookie properly using the response cookies
+    response.cookies.set({
+      name: "token",
+      value: token,
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: 180 * 60, // 180 * 60 seconds = 3 hours
+      maxAge: 60 * 180, // 3 hours in seconds
       path: "/",
       sameSite: "lax",
     });
