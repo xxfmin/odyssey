@@ -43,7 +43,7 @@ export default function LoginPage() {
       <div className="relative w-full max-w-md py-15 bg-white border-2 rounded-2xl border-gray-200 flex flex-col space-y-6">
         <button
           onClick={() => router.push("/")}
-          className={`absolute top-4 left-4 px-2 py-1 text-xs font-semibold hover:text-black/50 rounded ${poppins.className}`}
+          className={`absolute top-4 left-4 px-2 py-1 text-xs font-semibold hover:text-black/50 rounded cursor-pointer ${poppins.className}`}
         >
           Go back
         </button>
