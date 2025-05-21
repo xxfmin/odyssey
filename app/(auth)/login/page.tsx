@@ -1,56 +1,39 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import React, { useState } from "react";
-import { Poppins } from "next/font/google";
+import React from "react";
 import Link from "next/link";
+import { Poppins } from "next/font/google";
 
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
 });
 
-export default function Login() {
-  const router = useRouter();
-  const [identifier, setIdentifier] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+export default function LoginPage() {
+  const [identifier, setIdentifier] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [error, setError] = React.useState("");
 
-  async function doLogin(e: React.FormEvent) {
+  const doLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setIsLoading(true);
 
-    try {
-      // fetch api
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ identifier, password }),
-      });
+    const res = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ identifier, password }),
+    });
 
-      // if ok, wait a moment to let cookies process before redirect
-      if (response.ok) {
-        await response.json(); // Make sure to consume the response
+    const data = await res.json().catch(() => ({}));
 
-        // Short delay to ensure cookie is processed
-        setTimeout(() => {
-          router.push("/dashboard");
-        }, 100);
-      } else {
-        const data = await response.json();
-        setError(data.message || "Sign in failed");
-      }
-    } catch (err) {
-      setError("An error occurred during login");
-    } finally {
-      setIsLoading(false);
+    if (res.ok && (data as any).success) {
+      // hard navigation so the cookie is committed
+      window.location.href = "/dashboard";
+    } else {
+      setError((data as any).message || "Sign in failed");
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -61,23 +44,20 @@ export default function Login() {
         >
           Go back
         </Link>
-        <h1
-          className={`w-full pt-6 text-center text-2xl font-bold ${poppins.className}`}
-        >
+        <h1 className={`w-full pt-6 text-center text-2xl font-bold ${poppins.className}`}>
           Welcome to odyssey
         </h1>
-        <form
-          onSubmit={doLogin}
-          className="w-full flex flex-col items-center space-y-2 px-10"
-        >
+        <form onSubmit={doLogin} className="w-full flex flex-col items-center space-y-2 px-10">
           <input
+            name="identifier"
             type="text"
             placeholder="Username or email"
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
-            className={`w-full px-4 py-2 mb-4 mt-4 text-left text-sm placeholder-gray-400 border-2 rounded-md border-gray-200 ${poppins.className}`}
+            className={`w-full px-4 py-2 text-left text-sm placeholder-gray-400 border-2 rounded-md border-gray-200 ${poppins.className}`}
           />
           <input
+            name="password"
             type="password"
             placeholder="Password"
             value={password}
@@ -86,16 +66,16 @@ export default function Login() {
           />
           <button
             type="button"
-            onClick={() => router.push("/forgot-password")}
-            className={`w-full text-center text-xs ${poppins.className} underline cursor-pointer`}
+            onClick={() => (window.location.href = "/forgot-password")}
+            className={`w-full text-center text-xs underline cursor-pointer ${poppins.className}`}
           >
             Forgot password?
           </button>
           <div className="w-full min-h-[1rem] flex justify-center items-center">
             <div
               className={`
-                flex items-center space-x-2 
-                bg-pink-50 border border-pink-200 text-pink-700 
+                flex items-center space-x-2
+                bg-pink-50 border border-pink-200 text-pink-700
                 px-4 rounded-lg
                 ${error ? "visible" : "invisible"}
                 ${poppins.className}
@@ -107,20 +87,15 @@ export default function Login() {
           </div>
           <button
             type="submit"
-            disabled={isLoading}
-            className={`px-14 py-2 mt-2 text-white font-semibold border-2 rounded-full bg-blue-500 hover:bg-blue-600/90 ${
-              poppins.className
-            } cursor-pointer ${isLoading ? "opacity-70" : ""}`}
+            className={`px-14 py-2 mt-2 text-white font-semibold border-2 rounded-full bg-blue-500 hover:bg-blue-600/90 ${poppins.className} cursor-pointer`}
           >
-            {isLoading ? "Signing in..." : "Sign in"}
+            Sign in
           </button>
         </form>
-        <div
-          className={`w-full mt-4 flex justify-center items-center text-sm text-gray-600 ${poppins.className}`}
-        >
+        <div className={`w-full mt-4 flex justify-center items-center text-sm text-gray-600 ${poppins.className}`}>
           <span>Don't have an account?</span>
           <button
-            onClick={() => router.push("/signup")}
+            onClick={() => (window.location.href = "/signup")}
             className="pl-1 text-md text-blue-500 font-bold underline cursor-pointer"
           >
             Sign up

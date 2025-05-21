@@ -7,13 +7,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    // connect to database
     await connectMongoDB();
-
-    // take in user data from request
     const { identifier, password } = await request.json();
 
-    // basic validation
     if (!identifier || !password) {
       return NextResponse.json(
         { message: "All fields are required" },
@@ -21,25 +17,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // normalize input
     const normalized = identifier.trim().toLowerCase();
-
-    // query by username/email
     const user = await User.findOne({
       $or: [{ username: normalized }, { email: normalized }],
     });
-
-    // make sure user exists
     if (!user) {
       return NextResponse.json(
-        {
-          message: "User not found",
-        },
+        { message: "User not found" },
         { status: 404 }
       );
     }
 
-    // compare hashed password with stored password
     if (!(await bcrypt.compare(password, user.password))) {
       return NextResponse.json(
         { message: "Your password is incorrect" },
@@ -47,19 +35,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // jwt creation
     const payload = {
       userId: (user._id as mongoose.Types.ObjectId).toString(),
       username: user.username,
     };
     const token = sign(payload, process.env.JWT_SECRET!, {
-      expiresIn: "3h", // Use consistent format
+      expiresIn: "1h",
     });
 
-    // Create the response
-    const response = NextResponse.json(
+    // create JSON response and set cookie on it
+    const res = NextResponse.json(
       {
-        message: "Login successful",
+        success: true,
         user: {
           username: user.username,
           email: user.email,
@@ -68,19 +55,17 @@ export async function POST(request: NextRequest) {
       },
       { status: 200 }
     );
-
-    // Set cookie properly using the response cookies
-    response.cookies.set({
+    res.cookies.set({
       name: "token",
       value: token,
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60 * 3, // 3 hours in seconds (clearer notation)
+      maxAge: 60 * 180, // 3 hours
       path: "/",
       sameSite: "lax",
     });
 
-    return response;
+    return res;
   } catch (error) {
     console.error("Error logging in:", error);
     return NextResponse.json(
