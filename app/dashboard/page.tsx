@@ -35,6 +35,7 @@ export default function Dashboard() {
   ];
 
   useEffect(() => {
+    console.log(document.cookie);
     async function loadTrips() {
       try {
         const res = await fetch("/api/get-trips", {
