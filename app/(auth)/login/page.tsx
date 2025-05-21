@@ -28,15 +28,21 @@ export default function Login() {
       body: JSON.stringify({ identifier, password }),
     });
 
-    // on 302 Redirect, do a full navigation so the cookie sticks
-    if (res.status === 302 || res.redirected) {
-      const location = res.headers.get("Location")!;
+    // — any 3xx (302, 307, etc.) → do a hard navigation
+    if (res.status >= 300 && res.status < 400) {
+      const location = res.headers.get("Location") || "/dashboard";
       window.location.href = location;
       return;
     }
 
-    // otherwise it’s an error JSON
-    const data = await res.json();
+    // — otherwise handle it as JSON (error cases)
+    let data: { message?: string } = {};
+    try {
+      data = await res.json();
+    } catch {
+      // no JSON body
+    }
+
     setError(data.message || "Sign in failed");
   }
 
@@ -49,10 +55,15 @@ export default function Login() {
         >
           Go back
         </Link>
-        <h1 className={`w-full pt-6 text-center text-2xl font-bold ${poppins.className}`}>
+        <h1
+          className={`w-full pt-6 text-center text-2xl font-bold ${poppins.className}`}
+        >
           Welcome to odyssey
         </h1>
-        <form onSubmit={doLogin} className="w-full flex flex-col items-center space-y-2 px-10">
+        <form
+          onSubmit={doLogin}
+          className="w-full flex flex-col items-center space-y-2 px-10"
+        >
           <input
             name="identifier"
             type="text"
@@ -79,8 +90,8 @@ export default function Login() {
           <div className="w-full min-h-[1rem] flex justify-center items-center">
             <div
               className={`
-                flex items-center space-x-2 
-                bg-pink-50 border border-pink-200 text-pink-700 
+                flex items-center space-x-2
+                bg-pink-50 border border-pink-200 text-pink-700
                 px-4 rounded-lg
                 ${error ? "visible" : "invisible"}
                 ${poppins.className}
@@ -97,7 +108,9 @@ export default function Login() {
             Sign in
           </button>
         </form>
-        <div className={`w-full mt-4 flex justify-center items-center text-sm text-gray-600 ${poppins.className}`}>
+        <div
+          className={`w-full mt-4 flex justify-center items-center text-sm text-gray-600 ${poppins.className}`}
+        >
           <span>Don't have an account?</span>
           <button
             onClick={() => router.push("/signup")}

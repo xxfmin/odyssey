@@ -11,7 +11,10 @@ export async function POST(request: NextRequest) {
     const { identifier, password } = await request.json();
 
     if (!identifier || !password) {
-      return NextResponse.json({ message: "All fields are required" }, { status: 400 });
+      return NextResponse.json(
+        { message: "All fields are required" },
+        { status: 400 }
+      );
     }
 
     const normalized = identifier.trim().toLowerCase();
@@ -23,7 +26,10 @@ export async function POST(request: NextRequest) {
     }
 
     if (!(await bcrypt.compare(password, user.password))) {
-      return NextResponse.json({ message: "Your password is incorrect" }, { status: 401 });
+      return NextResponse.json(
+        { message: "Your password is incorrect" },
+        { status: 401 }
+      );
     }
 
     const payload = {
@@ -32,8 +38,11 @@ export async function POST(request: NextRequest) {
     };
     const token = sign(payload, process.env.JWT_SECRET!, { expiresIn: "1h" });
 
-    // *** 302 REDIRECT SO FETCH WILL SWITCH TO GET /dashboard ***
-    const response = NextResponse.redirect(new URL("/dashboard", request.url), 302);
+    // 302 so fetch will switch to GET when following the redirect
+    const response = NextResponse.redirect(
+      new URL("/dashboard", request.url),
+      302
+    );
     response.cookies.set({
       name: "token",
       value: token,
@@ -47,6 +56,9 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     console.error("Error logging in:", error);
-    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
