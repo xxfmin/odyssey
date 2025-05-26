@@ -66,8 +66,4 @@ Odyssey can be deployed to Vercel (frontend) and a Node.js hosting service (back
 
 ## Authors
 
-- **Felipe Min** - _Initial work_ - [FelipeMin](https://github.com/xxfmin)
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+- **Felipe Min** - [xxfmin](https://github.com/xxfmin)
