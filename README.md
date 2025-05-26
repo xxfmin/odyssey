@@ -13,7 +13,7 @@ Before you begin, ensure you have the following installed:
 - Node.js (v16.x or higher) and npm
 - MongoDB (local or Atlas)
 - A Google Maps API key
-- A Google Gemini (OpenAI) API key
+- A Google Gemini API key
 - The `jsonwebtoken` (JWT) secret for auth
 
 ### Installing
@@ -61,7 +61,7 @@ Odyssey can be deployed to Vercel (frontend) and a Node.js hosting service (back
 - [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS
 - [MongoDB & Mongoose](https://mongoosejs.com/) - Database
 - [Google Maps API](https://developers.google.com/maps) - Interactive maps
-- [OpenAI / Google Gemini API](https://platform.openai.com/) – AI-powered suggestions
+- [Google Gemini API](https://ai.google.dev/api?lang=node) – AI-powered suggestions
 - [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) – JWT generation/verification
 
 ## Authors
