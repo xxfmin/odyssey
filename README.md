@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Odyssey Travel Planner
+
+Odyssey is a full-stack, AI-enhanced travel itinerary builder that lets you discover destinations, generate personalized day-by-day plans, track expenses, and manage all aspects of your journey in one place.
 
 ## Getting Started
 
-First, run the development server:
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See **Deployment** for notes on how to deploy the project on a live system.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### Prerequisites
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Before you begin, ensure you have the following installed:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Node.js (v16.x or higher) and npm
+- MongoDB (local or Atlas)
+- A Google Maps API key
+- A Google Gemini (OpenAI) API key
+- The `jsonwebtoken` (JWT) secret for auth
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Installing
 
-## Learn More
+1. Clone the repository:
 
-To learn more about Next.js, take a look at the following resources:
+   ```bash
+   git clone https://github.com/xxfmin/odyssey.git
+   cd odyssey
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. Install dependencies
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   ```bash
+   npm run install
+   ```
 
-## Deploy on Vercel
+3. Create a `.env` file in the root of the project with the following variables:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   ```env
+   MONGODB_URL=your_mongodb_connection_string
+   JWT_SECRET=your_jwt_secret
+   GEMINI_KEY=your-google_gemini_key
+   NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4. Start the development servers:
+   ```bash
+   npm run dev
+   ```
+5. Open your browser and navigate to `http://localhost:3000` to view the app.
+
+## Deployment
+
+Odyssey can be deployed to Vercel (frontend) and a Node.js hosting service (backend). Ensure environment variables are set in your hosting dashboards:
+
+1. Push the frontend to Vercel with the `NEXT_PUBLIC_*` keys.
+2. Deploy the backend API to Heroku or another provider, setting `MONGODB_URL`
+3. Point the frontend API URL to your live backend.
+
+## Built With
+
+- [Next.js](https://nextjs.org/) - Frontend framework
+- [React](https://reactjs.org/) - UI library
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS
+- [MongoDB & Mongoose](https://mongoosejs.com/) - Database
+- [Google Maps API](https://developers.google.com/maps) - Interactive maps
+- [OpenAI / Google Gemini API](https://platform.openai.com/) – AI-powered suggestions
+- [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) – JWT generation/verification
+
+## Authors
+
+- **Felipe Min** - _Initial work_ - [FelipeMin](https://github.com/xxfmin)
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
