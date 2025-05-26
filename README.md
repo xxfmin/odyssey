@@ -1,4 +1,4 @@
-# Odyssey Travel Planner
+# Odyssey
 
 Odyssey is a full-stack, AI-enhanced travel itinerary builder that lets you discover destinations, generate personalized day-by-day plans, track expenses, and manage all aspects of your journey in one place.
 
