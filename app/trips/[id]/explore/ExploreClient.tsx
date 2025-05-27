@@ -229,7 +229,7 @@ json
             </p>
           </div>
           {/* second row: timing note */}
-          <p className="text-sm text-gray-500">(around 30 seconds)</p>
+          <p className="text-sm text-gray-500">(around 15 seconds)</p>
         </div>
       )}
 

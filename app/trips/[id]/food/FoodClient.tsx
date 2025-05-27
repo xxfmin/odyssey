@@ -193,7 +193,7 @@ Respond with **only** a JSON array. Example:
               Loading restaurant suggestions…
             </p>
           </div>
-          <p className="text-sm text-gray-500">(around 30 seconds)</p>
+          <p className="text-sm text-gray-500">(around 15 seconds)</p>
         </div>
       )}
 
