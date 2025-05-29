@@ -65,6 +65,6 @@ Odyssey can be deployed to Vercel (frontend) and a Node.js hosting service (back
 - [Google Gemini API](https://ai.google.dev/api?lang=node) – AI-powered suggestions
 - [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) – JWT generation/verification
 
-## Authors
+## Author
 
 - **Felipe Min** - [xxfmin](https://github.com/xxfmin)
